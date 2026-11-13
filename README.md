@@ -30,7 +30,7 @@ The [setup guide](docs/SETUP.md) covers each step in detail, plus Steam games un
 
 - **FOMOD installers work from any folder.** Upstream packs the native FOMOD module with an absolute path into its build folder ([Nexus-Mods/Vortex#23565](https://github.com/Nexus-Mods/Vortex/issues/23565)). In a copied build, the module fails to load and FOMOD mods get installed unprocessed. In these builds, the module loads its library from its own folder.
 - **Mods with Windows-style folder names unpack correctly.** Some archives store paths like `archive\pc\mod\file` with backslashes. The bundled 7-Zip is wrapped so those become real folders. Without the wrapper they fail on NTFS drives with "Invalid argument", and on Linux filesystems they unpack into files with backslashes in their names.
-- **One archive for most distros.** The packages are built on Ubuntu 22.04, which keeps the glibc requirement low. Each release states its floor, and so does `BUILD-INFO.txt` in the archive.
+- **One archive for every recent distro.** Everything the build compiles is compiled on Ubuntu 22.04. The FOMOD library that Vortex ships prebuilt needs glibc 2.38, and that sets the floor: Ubuntu 24.04, Debian 13, Fedora 39 and newer, current SteamOS, and rolling distros such as Arch. Each release states its floor, and so does `BUILD-INFO.txt` in the archive.
 - **Desktop integration.** `vortex.sh` hands `nxm://` links to Vortex and finds a .NET runtime in `~/.dotnet`. `install-desktop.sh` adds the app-menu entry and makes the "Mod Manager Download" buttons on nexusmods.com open Vortex.
 
 ## Compatibility
@@ -39,7 +39,8 @@ The [setup guide](docs/SETUP.md) covers each step in detail, plus Steam games un
 | --- | --- |
 | Omarchy (Arch Linux) | Tested by the maintainer |
 | SteamOS 3 (Steam Deck, desktop mode) | An earlier build of the same Vortex version ran on a Steam Deck, with .NET in `~/.dotnet`; this package is not tested there yet |
-| Ubuntu, Debian, Fedora, openSUSE, Bazzite, others | Built to work, not yet tested. Please [tell us how it goes](../../issues/new/choose) |
+| Ubuntu 24.04+, Debian 13+, Fedora 39+, openSUSE Tumbleweed, Bazzite, others with glibc 2.38 or newer | Built to work, not yet tested. Please [tell us how it goes](../../issues/new/choose) |
+| Ubuntu 22.04, Debian 12 and older | Not supported: their glibc is older than 2.38 |
 
 Reports from other distros are what moves a row to "tested". Use the **Distro report** issue form.
 

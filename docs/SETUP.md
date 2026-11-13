@@ -25,7 +25,7 @@ Prefer an assistant? [AGENT_PROMPT.md](AGENT_PROMPT.md) is a prompt you can give
   ldd --version | head -n 1
   ```
 
-  Rolling distros (Arch, Omarchy, CachyOS, EndeavourOS, openSUSE Tumbleweed) and recent releases of Fedora, Ubuntu and SteamOS are usually new enough. Older LTS releases may not be.
+  The current release needs glibc 2.38. Ubuntu 24.04, Debian 13, Fedora 39 and newer releases have it, and so do current SteamOS and rolling distros (Arch, Omarchy, CachyOS, EndeavourOS, openSUSE Tumbleweed). Ubuntu 22.04 and Debian 12 are too old.
 - **python3.** Almost every distro has it; `python3 --version` tells you.
 - **About 1 GB of disk** for Vortex, plus room for your mods.
 - **A Nexus Mods account.** Free is fine.

@@ -11,7 +11,7 @@ VERSION=${TAG#v}
 NAME=vortex-$VERSION-linux-x64
 repo=${GITHUB_REPOSITORY:-McNayr/vortex-linux}
 rev=${GITHUB_SHA:-main}
-floor=$(grep -m1 '^minimum glibc' "$STAGE/BUILD-INFO.txt" | sed 's/^minimum glibc: /glibc /')
+floor=$(grep -m1 '^minimum glibc' "$STAGE/BUILD-INFO.txt" | sed -E 's/^minimum glibc: ([0-9.]+).*/glibc \1/')
 cat <<EOF
 Unofficial native Linux build of [Vortex $VERSION](https://github.com/Nexus-Mods/Vortex/releases/tag/$TAG), the mod manager from Nexus Mods, built by GitHub Actions from the upstream tag (build $BUILD). Not affiliated with Nexus Mods.
 
@@ -19,6 +19,7 @@ Unofficial native Linux build of [Vortex $VERSION](https://github.com/Nexus-Mods
 
 \`\`\`bash
 sha256sum -c $NAME.tar.xz.sha256
+mkdir -p ~/Applications
 tar -xf $NAME.tar.xz -C ~/Applications   # or any folder you like
 ~/Applications/$NAME/install-desktop.sh   # app-menu entry, and nxm:// links open Vortex
 ~/Applications/$NAME/vortex.sh
