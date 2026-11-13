@@ -1,0 +1,97 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Upstream Vortex release tag, for example v2.10.1
+        required: true
+        default: v2.10.1
+      build:
+        description: Build number for this upstream version (1 first; 2 for a fixed rebuild)
+        required: true
+        default: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends patchelf 7zip desktop-file-utils
+      - name: Tests
+        run: VORTEX_7Z_REAL="$(command -v 7zz)" bash tests/run.sh
+
+  package:
+    if: github.event_name == 'workflow_dispatch'
+    needs: test
+    # The oldest supported Ubuntu LTS keeps the glibc floor low, so one archive runs on most distros.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 150
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag }}
+      BUILD: ${{ inputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check inputs
+        run: |
+          [[ $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "tag must look like v2.10.1"; exit 1; }
+          [[ $BUILD =~ ^[0-9]+$ ]] || { echo "build must be a number"; exit 1; }
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          df -h /
+      - name: System packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential python3-setuptools libfontconfig1-dev patchelf xz-utils
+      - name: Clone Vortex ${{ inputs.tag }}
+        run: git clone --depth 1 --branch "$TAG" https://github.com/Nexus-Mods/Vortex.git "$RUNNER_TEMP/vortex"
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ runner.temp }}/vortex/package.json
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: pnpm (the version the tag pins)
+        run: |
+          v=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["packageManager"].split("@")[1].split("+")[0])' "$RUNNER_TEMP/vortex/package.json")
+          npm install -g "pnpm@$v"
+      - name: Build Vortex
+        run: bash scripts/build-vortex.sh "$TAG" "$RUNNER_TEMP/vortex"
+      - name: Package
+        run: bash scripts/package.sh "$RUNNER_TEMP/vortex" "$TAG" "$RUNNER_TEMP/out"
+      - name: Test the packaged 7-Zip wrapper
+        run: |
+          app="$RUNNER_TEMP/out/vortex-${TAG#v}-linux-x64"
+          VORTEX_7Z_REAL="$app/resources/app.asar.unpacked/node_modules/7z-bin/linux/7zzs.real" \
+            python3 -m unittest discover -s tests -p 'test_7z_wrapper.py' -v
+      - name: Summary
+        run: |
+          { echo '```'; cat "$RUNNER_TEMP/out/vortex-${TAG#v}-linux-x64/BUILD-INFO.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vortex-${{ inputs.tag }}-linux-x64
+          path: |
+            ${{ runner.temp }}/out/*.tar.xz
+            ${{ runner.temp }}/out/*.sha256
+          retention-days: 14
+          compression-level: 0
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash scripts/release-notes.sh "$TAG" "$BUILD" "$RUNNER_TEMP/out/vortex-${TAG#v}-linux-x64" > "$RUNNER_TEMP/notes.md"
+          gh release create "$TAG-linux.$BUILD" --draft --target "$GITHUB_SHA" \
+            --title "Vortex ${TAG#v} for Linux (build $BUILD)" --notes-file "$RUNNER_TEMP/notes.md" \
+            "$RUNNER_TEMP"/out/*.tar.xz "$RUNNER_TEMP"/out/*.sha256

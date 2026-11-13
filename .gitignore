@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+/out/
+/vortex-src/
+*.tar.xz
+*.tar.xz.sha256
