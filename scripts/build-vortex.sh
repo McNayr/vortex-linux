@@ -38,6 +38,10 @@ done
 echo "node $(node --version), pnpm $have, dotnet $(dotnet --version)"
 
 export NX_DAEMON=false NX_NO_CLOUD=true npm_config_python=${npm_config_python:-$(command -v python3)}
+# electron-builder hardlinks instead of copying when it detects CI, and then fails
+# with EEXIST where two unpack rules place the same file (winapi-bindings); copy
+# like a local build does.
+export USE_HARD_LINKS=false
 cd "$SRC"
 pnpm install --frozen-lockfile
 # src/main/package.json holds the placeholder version 1.0.0 until a release stamps it.
