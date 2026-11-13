@@ -1,0 +1,64 @@
+name: Distro report
+description: Tell us how a build runs on your distro (works or not); this fills the compatibility table
+title: "Distro report: "
+labels: [distro-report]
+body:
+  - type: input
+    id: build
+    attributes:
+      label: Vortex build
+      placeholder: vortex-2.10.1-linux-x64 (build 1)
+    validations:
+      required: true
+  - type: input
+    id: distro
+    attributes:
+      label: Distro and version
+      placeholder: Bazzite 43, Linux Mint 22.2, ...
+    validations:
+      required: true
+  - type: input
+    id: glibc
+    attributes:
+      label: glibc version
+      description: First line of `ldd --version`
+    validations:
+      required: true
+  - type: input
+    id: desktop
+    attributes:
+      label: Desktop
+      placeholder: KDE Plasma 6 on Wayland
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - Works
+        - Works after a workaround (describe below)
+        - Does not work
+    validations:
+      required: true
+  - type: checkboxes
+    id: tested
+    attributes:
+      label: What you tried
+      options:
+        - label: Vortex starts
+        - label: Log in to Nexus Mods
+        - label: "\"Mod Manager Download\" buttons open Vortex"
+        - label: Install a mod
+        - label: Install a mod with a FOMOD installer (the options dialog)
+        - label: Deploy mods, and the game starts with them
+  - type: input
+    id: games
+    attributes:
+      label: Game(s)
+      placeholder: Skyrim Special Edition (Steam, Proton 10)
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes, workarounds, errors
+      description: Remove personal details (user name in paths, Nexus user name) from anything you paste.

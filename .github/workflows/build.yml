@@ -57,16 +57,29 @@ jobs:
           sudo apt-get install -y --no-install-recommends build-essential python3-setuptools libfontconfig1-dev patchelf xz-utils
       - name: Clone Vortex ${{ inputs.tag }}
         run: git clone --depth 1 --branch "$TAG" https://github.com/Nexus-Mods/Vortex.git "$RUNNER_TEMP/vortex"
+      # setup-node reads node-version-file relative to the checkout, so pass the tag's pins explicitly.
+      - name: Versions the tag pins
+        id: pins
+        run: |
+          python3 - "$RUNNER_TEMP/vortex" >> "$GITHUB_OUTPUT" <<'EOF'
+          import json, os, sys
+          src = sys.argv[1]
+          pkg = json.load(open(os.path.join(src, "package.json")))
+          node = pkg.get("engines", {}).get("node") or open(os.path.join(src, ".node-version")).read().strip()
+          print("node=" + node)
+          print("pnpm=" + pkg["packageManager"].split("@")[1].split("+")[0])
+          EOF
+          cat "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with:
-          node-version-file: ${{ runner.temp }}/vortex/package.json
+          node-version: ${{ steps.pins.outputs.node }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
       - name: pnpm (the version the tag pins)
-        run: |
-          v=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["packageManager"].split("@")[1].split("+")[0])' "$RUNNER_TEMP/vortex/package.json")
-          npm install -g "pnpm@$v"
+        env:
+          PNPM_VERSION: ${{ steps.pins.outputs.pnpm }}
+        run: npm install -g "pnpm@$PNPM_VERSION"
       - name: Build Vortex
         run: bash scripts/build-vortex.sh "$TAG" "$RUNNER_TEMP/vortex"
       - name: Package

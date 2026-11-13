@@ -1,0 +1,71 @@
+name: Bug report
+description: Something goes wrong with a vortex-linux build
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Before you paste logs, **remove personal details**: your user name in paths (`/home/<you>/` becomes `/home/USER/`), your Nexus Mods user name, and anything else private.
+        Does the same problem happen with the official Windows Vortex too? Then please report it at [Nexus-Mods/Vortex](https://github.com/Nexus-Mods/Vortex/issues).
+  - type: input
+    id: build
+    attributes:
+      label: Vortex build
+      description: The release you use, from the folder name or BUILD-INFO.txt
+      placeholder: vortex-2.10.1-linux-x64 (build 1)
+    validations:
+      required: true
+  - type: input
+    id: distro
+    attributes:
+      label: Distro and version
+      placeholder: Fedora 43, SteamOS 3.8, Ubuntu 24.04, ...
+    validations:
+      required: true
+  - type: input
+    id: glibc
+    attributes:
+      label: glibc version
+      description: First line of `ldd --version`
+    validations:
+      required: true
+  - type: dropdown
+    id: session
+    attributes:
+      label: Desktop session
+      options:
+        - Wayland
+        - X11
+        - Steam Deck desktop mode
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: dotnet
+    attributes:
+      label: How the .NET 9 runtime is installed
+      options:
+        - ~/.dotnet (dotnet-install.sh)
+        - Distro package
+        - Not installed
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: game
+    attributes:
+      label: Game (if the problem is with a game)
+      placeholder: Cyberpunk 2077 (Steam, Proton Experimental)
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+      description: Steps to reproduce, and the mod's name and link if the problem is with a mod.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Errors
+      description: Output of `vortex.sh` started in a terminal, and/or the relevant lines from `~/.config/Vortex/vortex.log`. Remove personal details first.
+      render: text

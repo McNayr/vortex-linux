@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Problems that also happen in Windows Vortex
+    url: https://github.com/Nexus-Mods/Vortex/issues
+    about: Report those to the official Vortex repository.
+  - name: Setup guide and troubleshooting
+    url: https://github.com/McNayr/vortex-linux/blob/main/docs/SETUP.md
+    about: Most problems have a fix in the troubleshooting table.
